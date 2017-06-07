@@ -4,7 +4,7 @@
 #endif
 #ifeq ($(BLAS), OPENBLAS) 
 CC = g++
-LIBS = -lopenblas -L/shared/apps/rhel-6.2/libs/openblas-0.2.8/sandybridge/lib
+LIBS = -lblas #-L/shared/apps/rhel-6.2/libs/openblas-0.2.8/sandybridge/lib
 #endif
 
 
