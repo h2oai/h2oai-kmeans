@@ -155,8 +155,8 @@ int main() {
         std::cout << "Choice not understood, running huge test" << std::endl;
     }
     int iterations = 100;
-    int n = 5e6;
-    int d = 50;
+    int n = 260753;
+    int d = 298;
     int k = 100;
 
     int n_gpu;
@@ -198,5 +198,6 @@ int main() {
        delete(data[q]);
        delete(labels[q]);
        delete(centroids[q]);
+       delete(distances[q]);
     }
 }
