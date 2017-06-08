@@ -35,9 +35,9 @@ typedef float real_t;
 
 int main() {
   int iterations = 100;
-  int n = 2000000;
-  int d = 29;
-  int k = 500;
+  int n = 260753;
+  int d = 298;
+  int k = 100;
 
   int n_gpu;
   cudaGetDeviceCount(&n_gpu);
