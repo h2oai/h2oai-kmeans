@@ -2,27 +2,27 @@
 
 namespace kmeans {
 
-timer::timer() {
+  timer::timer() {
     cudaEventCreate(&m_start);
     cudaEventCreate(&m_stop);
-}
+  }
 
-timer::~timer() {
+  timer::~timer() {
     cudaEventDestroy(m_start);
     cudaEventDestroy(m_stop);
-}
+  }
 
-void timer::start() {
+  void timer::start() {
     cudaEventRecord(m_start, 0);
-}
+  }
 
-float timer::stop() {
+  float timer::stop() {
     float time;
     cudaEventRecord(m_stop, 0);
     cudaEventSynchronize(m_stop);
     cudaEventElapsedTime(&time, m_start, m_stop);
     return time;
-}
+  }
 
 }
 
