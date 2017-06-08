@@ -34,10 +34,11 @@ void random_labels(thrust::device_vector<int>& labels, int n, int k) {
 typedef float real_t;
 
 int main() {
-  int iterations = 100;
+  int max_iterations = 10000;
   int n = 260753;
   int d = 298;
   int k = 100;
+  double thresh = 1e-3;
 
   int n_gpu;
   cudaGetDeviceCount(&n_gpu);
@@ -60,7 +61,8 @@ int main() {
   std::cout << "Number of points: " << n << std::endl;
   std::cout << "Number of dimensions: " << d << std::endl;
   std::cout << "Number of clusters: " << k << std::endl;
-  std::cout << "Number of iterations: " << iterations << std::endl;
+  std::cout << "Max. number of iterations: " << max_iterations << std::endl;
+  std::cout << "Stopping threshold: " << thresh << std::endl;
 
   for (int q = 0; q < n_gpu; q++) {
     random_data<real_t>(*data[q], n/n_gpu, d);
@@ -68,7 +70,7 @@ int main() {
   }
   kmeans::timer t;
   t.start();
-  kmeans::kmeans<real_t>(iterations, n, d, k, data, labels, centroids, distances, n_gpu);
+  kmeans::kmeans<real_t>(n, d, k, data, labels, centroids, distances, n_gpu, max_iterations, true, thresh);
   float time = t.stop();
   std::cout << "  Time: " << time/1000.0 << " s" << std::endl;
 

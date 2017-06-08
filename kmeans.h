@@ -20,7 +20,6 @@ namespace kmeans {
   //! kmeans clusters data into k groups
   /*! 
 
-    \param iterations How many iterations to run
     \param n Number of data points
     \param d Number of dimensions
     \param k Number of clusters
@@ -44,23 +43,24 @@ namespace kmeans {
     initialized before calling kmeans. Defaults to true, which means
     the labels must be initialized.
     \param threshold This controls early termination of the kmeans
-    iterations. If the ratio of the sum of distances from points to
-    centroids from this iteration to the previous iteration changes by
-    less than the threshold, than the iterations are
-    terminated. Defaults to 0.000001
+    iterations. If the ratio of points being reassigned to a different
+    centroid is less than the threshold, than the iterations are
+    terminated. Defaults to 1e-3.
+    \param max_iterations Maximum number of iterations to run
     \return The number of iterations actually performed.
    */
 
   template<typename T>
-    int kmeans(int iterations,
+    int kmeans(
         int n, int d, int k,
         thrust::device_vector<T>** data,
         thrust::device_vector<int>** labels,
         thrust::device_vector<T>** centroids,
         thrust::device_vector<T>** distances,
         int n_gpu,
-        bool init_from_labels=true, 
-        double threshold=1e-6) {
+        int max_iterations,
+        bool init_from_labels=true,
+        double threshold=1e-3) {
       thrust::device_vector<T> *data_dots[16];
       thrust::device_vector<T> *centroid_dots[16];
       thrust::device_vector<T> *pairwise_distances[16];
@@ -101,7 +101,7 @@ namespace kmeans {
 
       double prior_distance_sum = 0;
       int i=0;
-      for(; i < iterations; i++) {
+      for(; i < max_iterations; i++) {
         //Average the centroids from each device
         if (n_gpu > 1) {
           for (int p = 0; p < k * d; p++) h_centroids[p] = 0.0;
@@ -119,7 +119,6 @@ namespace kmeans {
           }
         }
         for (int q = 0; q < n_gpu; q++) {
-          //TODO compute total distance
           cudaSetDevice(q);
 
           detail::calculate_distances(n/n_gpu, d, k,
@@ -134,25 +133,26 @@ namespace kmeans {
           //T d_distance_sum[q] = thrust::reduce(distances[q].begin(), distances[q].end())
           mycub::sum_reduce(*distances[q], d_distance_sum[q]);
         }
-#if __VERBOSE
         double distance_sum = 0.0;
+        int moved_points = 0.0;
         for (int q = 0; q < n_gpu; q++) {
           cudaMemcpyAsync(h_changes+q, d_changes[q], sizeof(int), cudaMemcpyDeviceToHost, cuda_stream[q]);
           cudaMemcpyAsync(h_distance_sum+q, d_distance_sum[q], sizeof(T), cudaMemcpyDeviceToHost, cuda_stream[q]);
           detail::streamsync(q);
-          std::cout << "Device " << q << ":  Iteration " << i << " produced " << h_changes[q]
-            << " changes and the total_distance is " << h_distance_sum[q] << std::endl;
+          //std::cout << "Device " << q << ":  Iteration " << i << " produced " << h_changes[q]
+          //  << " changes and the total_distance is " << h_distance_sum[q] << std::endl;
           distance_sum += h_distance_sum[q];
+          moved_points += h_changes[q];
         }
         if (i > 0) {
-          double delta = distance_sum / prior_distance_sum;
-          if (delta > 1 - threshold) {
-            std::cout << "Threshold triggered. Terminating iterations early." << std::endl;
+          double fraction = (double)moved_points / n;
+          std::cout << "Iteration: " << i << ", moved points: " << moved_points << std::endl;
+          if (fraction < threshold) {
+            std::cout << "Threshold triggered. Terminating early." << std::endl;
             return i + 1;
           }
         }
         prior_distance_sum = distance_sum;
-#endif
 
       }
       for (int q = 0; q < n_gpu; q++) {

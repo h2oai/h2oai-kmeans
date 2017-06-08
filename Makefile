@@ -1,7 +1,7 @@
 CUDA_ARCH ?= sm_60
 CUB_HOME ?= ./cub
 
-test: test.cu labels.o timer.o
+test: test.cu labels.o timer.o kmeans.h
 	nvcc -arch=$(CUDA_ARCH) -Xptxas -v -I$(CUB_HOME) -o test test.cu labels.o timer.o -lcublas
 
 labels.o: labels.cu labels.h
