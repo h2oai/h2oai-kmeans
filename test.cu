@@ -42,6 +42,7 @@ int main() {
 
   int n_gpu;
   cudaGetDeviceCount(&n_gpu);
+  n_gpu=2;
 
   std::cout << n_gpu << " gpus." << std::endl;
 
@@ -74,6 +75,20 @@ int main() {
   float time = t.stop();
   std::cout << "  Time: " << time/1000.0 << " s" << std::endl;
 
+  // debug
+  int printcenters=1;
+  if(printcenters){
+    thrust::host_vector<real_t> *ctr = new thrust::host_vector<real_t>(*centroids[0]);
+    for(unsigned int ii=0;ii<k;ii++){
+      fprintf(stderr,"ii=%d of k=%d ",ii,k);
+      for(unsigned int jj=0;jj<d;jj++){
+        fprintf(stderr,"%g ",(*ctr)[d*ii+jj]);
+      }
+      fprintf(stderr,"\n");
+      fflush(stderr);
+    }
+  }
+  
   for (int q = 0; q < n_gpu; q++) {
     delete(data[q]);
     delete(labels[q]);
