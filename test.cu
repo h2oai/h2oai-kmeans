@@ -15,10 +15,14 @@ void fill_array(T& array, int m, int n) {
 }
 
 template<typename T>
-void random_data(thrust::device_vector<T>& array, int m, int n) {
-  thrust::host_vector<T> host_array(m*n);
-  for(int i = 0; i < m * n; i++) {
-    host_array[i] = (T)rand()/(T)RAND_MAX;
+void random_data(thrust::device_vector<T>& array, int n, int d, int k) {
+  thrust::host_vector<T> host_array(n*d);
+  for(int i = 0; i < n; i++) {
+  for(int j = 0; j < d; j++) {
+    //    host_array[i] = (T)rand()/(T)RAND_MAX;
+    host_array[i*d+j] = i%k;
+    //    host_array[j*n+i] = i%k;
+  }
   }
   array = host_array;
 }
@@ -36,13 +40,15 @@ typedef float real_t;
 int main() {
   int max_iterations = 10000;
   int n = 260753;
-  int d = 298;
-  int k = 100;
+  //  int d = 298;
+  //int k = 100;
+  int d = 3;
+  int k = 10;
   double thresh = 1e-3;
 
   int n_gpu;
   cudaGetDeviceCount(&n_gpu);
-  n_gpu=2;
+  n_gpu=1;
 
   std::cout << n_gpu << " gpus." << std::endl;
 
@@ -65,8 +71,12 @@ int main() {
   std::cout << "Max. number of iterations: " << max_iterations << std::endl;
   std::cout << "Stopping threshold: " << thresh << std::endl;
 
+  /* Intializes random number generator */
+  //srand((unsigned) time(&t));
+  srand(777);
+  
   for (int q = 0; q < n_gpu; q++) {
-    random_data<real_t>(*data[q], n/n_gpu, d);
+    random_data<real_t>(*data[q], n/n_gpu, d, k);
     random_labels(*labels[q], n/n_gpu, k);
   }
   kmeans::timer t;
