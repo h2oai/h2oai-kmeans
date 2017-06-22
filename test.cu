@@ -15,7 +15,20 @@ void fill_array(T& array, int m, int n) {
     }
 }
 
-void random_data(thrust::device_vector<double>& array, int m, int n) {
+template<typename T>
+void random_data(thrust::device_vector<T>& array, int n, int d, int k) {
+  thrust::host_vector<T> host_array(n*d);
+  for(int i = 0; i < n; i++) {
+  for(int j = 0; j < d; j++) {
+    //    host_array[i] = (T)rand()/(T)RAND_MAX;
+     host_array[i*d+j] = i%k;
+     fprintf(stderr,"i=%d d=%d : %g\n",i,d,host_array[i*d+j]);  fflush(stderr);
+    //    host_array[j*n+i] = i%k;
+  }
+  }
+  array = host_array;
+}
+void random_data_orig(thrust::device_vector<double>& array, int m, int n) {
     thrust::host_vector<double> host_array(m*n);
     for(int i = 0; i < m * n; i++) {
         host_array[i] = (double)rand()/(double)RAND_MAX;
@@ -142,9 +155,9 @@ int main() {
         std::cout << "Choice not understood, running huge test" << std::endl;
     }
     int iterations = 50;
-    int n = 1e6;
-    int d = 50;
-    int k = 100;
+    int n = 3;
+    int d = 3;
+    int k = n;
 
     thrust::device_vector<double> data(n * d);
     thrust::device_vector<int> labels(n);
@@ -157,7 +170,7 @@ int main() {
     std::cout << "Number of clusters: " << k << std::endl;
     std::cout << "Number of iterations: " << iterations << std::endl;
     
-    random_data(data, n, d);
+    random_data(data, n, d, k);
     random_labels(labels, n, k);
     kmeans::timer t;
     t.start();
@@ -165,5 +178,29 @@ int main() {
     float time = t.stop();
     std::cout << "  Time: " << time/1000.0 << " s" << std::endl;
 
-    
+      // debug
+  int printcenters=1;
+  if(printcenters){
+    fprintf(stderr,"centers\n"); fflush(stderr);
+    thrust::host_vector<double> *ctr = new thrust::host_vector<double>(centroids);
+    for(unsigned int ii=0;ii<k;ii++){
+      fprintf(stderr,"ii=%d of k=%d ",ii,k);
+      for(unsigned int jj=0;jj<d;jj++){
+        fprintf(stderr,"%g ",(*ctr)[d*ii+jj]);
+      }
+      fprintf(stderr,"\n");
+      fflush(stderr);
+    }
+  }
+  int printlabels=1;
+  if(printlabels){
+    fprintf(stderr,"labels\n"); fflush(stderr);
+    thrust::host_vector<int> *lbl = new thrust::host_vector<int>(labels);
+    for(unsigned int ii=0;ii<n;ii++){
+      fprintf(stderr,"ii=%d of n=%d ",ii,n);
+      fprintf(stderr,"%d\n",(*lbl)[ii]);
+      fflush(stderr);
+    }
+  }
+  
 }

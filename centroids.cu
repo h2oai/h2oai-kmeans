@@ -3,7 +3,7 @@
 #include <thrust/fill.h>
 #include <thrust/iterator/counting_iterator.h>
 
-__device__ double atomicAdd(double* address, double val)
+__device__ double atomicAdd2(double* address, double val)
 {
     unsigned long long int* address_as_ull =
                              (unsigned long long int*)address;
@@ -26,7 +26,7 @@ __device__ __forceinline__ void update_centroid(int label, int dimension,
                                                 int count, int* counts) {
     int index = label * d + dimension;
     double* target = centroids + index;
-    atomicAdd(target, accumulator);
+    atomicAdd2(target, accumulator);
     if (dimension == 0) {
         atomicAdd(counts + label, count);
     }             
