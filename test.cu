@@ -16,7 +16,7 @@ void fill_array(T& array, int m, int n) {
     }
 }
 
-void random_data(thrust::device_vector<double>& array, int m, int n) {
+void random_data_orig(thrust::device_vector<double>& array, int m, int n) {
     thrust::host_vector<double> host_array(m*n);
     for(int i = 0; i < m * n; i++) {
         host_array[i] = (double)rand()/(double)RAND_MAX;
@@ -24,6 +24,19 @@ void random_data(thrust::device_vector<double>& array, int m, int n) {
     array = host_array;
 }
 
+template<typename T>
+void random_data(thrust::device_vector<T>& array, int n, int d, int k) {
+  thrust::host_vector<T> host_array(n*d);
+  for(int i = 0; i < n; i++) {
+  for(int j = 0; j < d; j++) {
+    //    host_array[i] = (T)rand()/(T)RAND_MAX;
+     host_array[i*d+j] = i%k;
+     fprintf(stderr,"i=%d d=%d : %g\n",i,d,host_array[i*d+j]);  fflush(stderr);
+    //    host_array[j*n+i] = i%k;
+  }
+  }
+  array = host_array;
+}
 void random_labels(thrust::device_vector<int>& labels, int n, int k) {
     thrust::host_vector<int> host_labels(n);
     for(int i = 0; i < n; i++) {
@@ -155,13 +168,15 @@ int main() {
         std::cout << "Choice not understood, running huge test" << std::endl;
     }
     int iterations = 50;
-    int n = 1e6;
-    int d = 50;
-    int k = 100;
+    int n = 3;
+    int d = 3;
+    int k = n;
 
     int n_gpu;
     
     cudaGetDeviceCount(&n_gpu);
+
+    n_gpu=1;
 
     //n_gpu = 1;
     std::cout << n_gpu << " gpus." << std::endl;
@@ -185,14 +200,39 @@ int main() {
     std::cout << "Number of iterations: " << iterations << std::endl;
     
     for (int q = 0; q < n_gpu; q++) {
-       random_data(*data[q], n/n_gpu, d);
-       random_labels(*labels[q], n/n_gpu, k);
+      random_data(*data[q], n/n_gpu, d, k);
+      random_labels(*labels[q], n/n_gpu, k);
     }
     kmeans::timer t;
     t.start();
     kmeans::kmeans(iterations, n, d, k, data, labels, centroids, distances, n_gpu);
     float time = t.stop();
     std::cout << "  Time: " << time/1000.0 << " s" << std::endl;
+
+     // debug
+  int printcenters=1;
+  if(printcenters){
+    fprintf(stderr,"centers\n"); fflush(stderr);
+    thrust::host_vector<double> *ctr = new thrust::host_vector<double>(*centroids[0]);
+    for(unsigned int ii=0;ii<k;ii++){
+      fprintf(stderr,"ii=%d of k=%d ",ii,k);
+      for(unsigned int jj=0;jj<d;jj++){
+        fprintf(stderr,"%g ",(*ctr)[d*ii+jj]);
+      }
+      fprintf(stderr,"\n");
+      fflush(stderr);
+    }
+  }
+  int printlabels=1;
+  if(printlabels){
+    fprintf(stderr,"labels\n"); fflush(stderr);
+    thrust::host_vector<int> *lbl = new thrust::host_vector<int>(*labels[0]);
+    for(unsigned int ii=0;ii<n;ii++){
+      fprintf(stderr,"ii=%d of n=%d ",ii,n);
+      fprintf(stderr,"%d\n",(*lbl)[ii]);
+      fflush(stderr);
+    }
+  }
 
     for (int q = 0; q < n_gpu; q++) {
        delete(data[q]);

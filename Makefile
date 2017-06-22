@@ -1,5 +1,5 @@
 CUDA_ARCH ?= sm_35
-CUB_HOME ?= /home/lbarnes/CUB/cub-1.0.2/
+CUB_HOME ?= ./cub/
 
 test: test.cu centroids.o labels.o kmeans.o timer.o
 	nvcc -arch=$(CUDA_ARCH) -Xptxas -v -I$(CUB_HOME) -o test test.cu centroids.o labels.o kmeans.o timer.o -lcublas
