@@ -1,14 +1,24 @@
 #include <iostream>
 #include <vector>
 #include "stdlib.h"
+#include <stdio.h>
 #include "string.h" //memset
 //#include "mkl.h"
 #include "cblas.h"
 
 //extern "C" void dgemm_( char *, char *, int *, int *, int *, double *, double *, int *, double *, int *, double *, double *, int * );
 
-void random_data(std::vector<double>& array, int n) {
-   for (int i=0; i<n; i++) array[i] = (double)rand()/(double)RAND_MAX;
+void random_data(std::vector<double>& array, int n, int d, int k) {
+  //  for (int i=0; i<n; i++) array[i] = (double)rand()/(double)RAND_MAX;
+
+  for(int i = 0; i < n; i++) {
+  for(int j = 0; j < d; j++) {
+    //    array[i] = (T)rand()/(T)RAND_MAX;
+     array[i*d+j] = i%k;
+     fprintf(stderr,"i=%d d=%d : %g\n",i,d,array[i*d+j]);  fflush(stderr);
+    //    host_array[j*n+i] = i%k;
+  }
+  }
 }
 
 void random_labels(std::vector<int>& array, int n, int max) {
@@ -92,9 +102,9 @@ int relabel(std::vector<double> data_in, int n,
 }
 int main(int argc, char** argv) {
 
-   int n = 5e6;
-   int d = 50;
-   int n_cluster = 100;
+   int n = 3;
+   int d = 3;
+   int n_cluster = n;
    int iterations = 100;
 
    if (argc>1) {
@@ -118,7 +128,7 @@ int main(int argc, char** argv) {
    std::vector<int> labels(n); //cluster labels for each point
    std::vector<double> distances(n); //distances from point from a centroid
 
-   random_data(data, n*d);
+   random_data(data, n,d,n_cluster);
  
 
    std::vector<double> data_dots(n);

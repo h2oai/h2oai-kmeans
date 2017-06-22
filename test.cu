@@ -20,7 +20,8 @@ void random_data(thrust::device_vector<T>& array, int n, int d, int k) {
   for(int i = 0; i < n; i++) {
   for(int j = 0; j < d; j++) {
     //    host_array[i] = (T)rand()/(T)RAND_MAX;
-    host_array[i*d+j] = i%k;
+     host_array[i*d+j] = i%k;
+     fprintf(stderr,"i=%d d=%d : %g\n",i,d,host_array[i*d+j]);  fflush(stderr);
     //    host_array[j*n+i] = i%k;
   }
   }
@@ -39,11 +40,11 @@ typedef float real_t;
 
 int main() {
   int max_iterations = 10000;
-  int n = 260753;
+  int n = 3;
   //  int d = 298;
   //int k = 100;
   int d = 3;
-  int k = 10;
+  int k = n;
   double thresh = 1e-3;
 
   int n_gpu;
