@@ -69,7 +69,7 @@ namespace kmeans {
                           d,//Has to be k or d
                           &beta,
                           thrust::raw_pointer_cast(pairwise_distances.data()),
-                          n); //Has to be n or k
+                          k); //Has to be n or k
 
           if (stat != CUBLAS_STATUS_SUCCESS) {
               std::cout << "Invalid Dgemm" << std::endl;
@@ -107,7 +107,7 @@ namespace kmeans {
                           d,//Has to be k or d
                           &beta,
                           thrust::raw_pointer_cast(pairwise_distances.data()),
-                          n); //Has to be n or k
+                          k); //Has to be n or k
 
           if (stat != CUBLAS_STATUS_SUCCESS) {
               std::cout << "Invalid Sgemm" << std::endl;
