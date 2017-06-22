@@ -150,4 +150,29 @@ int main(int argc, char** argv) {
       if (0 == movers) break;
       find_centroids(data, n, d, labels, centroids, n_cluster);
    }
+   // debug
+   int k=n_cluster;
+   int printcenters=1;
+   if(printcenters){
+     fprintf(stderr,"centers\n"); fflush(stderr);
+     for(unsigned int ii=0;ii<k;ii++){
+       fprintf(stderr,"ii=%d of k=%d ",ii,k);
+       for(unsigned int jj=0;jj<d;jj++){
+         fprintf(stderr,"%g ",centroids[d*ii+jj]);
+       }
+       fprintf(stderr,"\n");
+       fflush(stderr);
+     }
+   }
+   int printlabels=1;
+   if(printlabels){
+     fprintf(stderr,"labels\n"); fflush(stderr);
+     for(unsigned int ii=0;ii<n;ii++){
+       fprintf(stderr,"ii=%d of n=%d ",ii,n);
+       fprintf(stderr,"%d\n",labels[ii]);
+       fflush(stderr);
+     }
+   }
+
+   
 }

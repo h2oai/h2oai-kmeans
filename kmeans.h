@@ -139,8 +139,8 @@ namespace kmeans {
           cudaMemcpyAsync(h_changes+q, d_changes[q], sizeof(int), cudaMemcpyDeviceToHost, cuda_stream[q]);
           cudaMemcpyAsync(h_distance_sum+q, d_distance_sum[q], sizeof(T), cudaMemcpyDeviceToHost, cuda_stream[q]);
           detail::streamsync(q);
-          //std::cout << "Device " << q << ":  Iteration " << i << " produced " << h_changes[q]
-          //  << " changes and the total_distance is " << h_distance_sum[q] << std::endl;
+          std::cout << "Device " << q << ":  Iteration " << i << " produced " << h_changes[q]
+            << " changes and the total_distance is " << h_distance_sum[q] << std::endl;
           distance_sum += h_distance_sum[q];
           moved_points += h_changes[q];
         }

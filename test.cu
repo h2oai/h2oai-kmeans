@@ -60,7 +60,7 @@ int main() {
   for (int q = 0; q < n_gpu; q++) {
     cudaSetDevice(q);
     data[q] = new thrust::device_vector<real_t>(n/n_gpu*d);
-    labels[q] = new thrust::device_vector<int>(n/n_gpu*d);
+    labels[q] = new thrust::device_vector<int>(n/n_gpu);
     centroids[q] = new thrust::device_vector<real_t>(k * d);
     distances[q] = new thrust::device_vector<real_t>(n);
   }
@@ -89,6 +89,7 @@ int main() {
   // debug
   int printcenters=1;
   if(printcenters){
+    fprintf(stderr,"centers\n"); fflush(stderr);
     thrust::host_vector<real_t> *ctr = new thrust::host_vector<real_t>(*centroids[0]);
     for(unsigned int ii=0;ii<k;ii++){
       fprintf(stderr,"ii=%d of k=%d ",ii,k);
@@ -96,6 +97,16 @@ int main() {
         fprintf(stderr,"%g ",(*ctr)[d*ii+jj]);
       }
       fprintf(stderr,"\n");
+      fflush(stderr);
+    }
+  }
+  int printlabels=1;
+  if(printlabels){
+    fprintf(stderr,"labels\n"); fflush(stderr);
+    thrust::host_vector<int> *lbl = new thrust::host_vector<int>(*labels[0]);
+    for(unsigned int ii=0;ii<n;ii++){
+      fprintf(stderr,"ii=%d of n=%d ",ii,n);
+      fprintf(stderr,"%d\n",(*lbl)[ii]);
       fflush(stderr);
     }
   }
